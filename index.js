@@ -6,7 +6,7 @@ const readlineSync = require('readline-sync')
 
 // We'll keep a global object to store usernames and password hashes
 let globalStore = {}
-
+const saltRounds = 10;
 
 
 /*
@@ -15,36 +15,38 @@ let globalStore = {}
 
 // function for checking a password
 checkPassword = async (username, plaintextPassword) => {
-    // TODO: Make sure to delete this console.log once you're done implementing the function!
-    console.log('\n Uh-oh, checkPassword is not yet implemented. 😢')
-    // Ensure global store contains the user 
-    // (this is a quick way to check if an object contains a key)
+    // Check if the user exists in the global store
     if (globalStore[username]) {
-        // TODO: Use bcrypt's compare methof to compare a plaintext password to a password hash
+        try {
+            // Use bcrypt's compare method to compare the plaintext password with the hashed password
+            const result = await bcrypt.compare(plaintextPassword, globalStore[username]);
 
-        // TODO: The result variable is a boolean. True means the user was valid. Take action accordingly.
-        if (result) {
-            // TODO: Display message for valid credentials
+            // Check the result and take action accordingly
+            if (result) {
+                console.log('\n✅ User authenticated successfully');
+            } else {
+                console.log('\n❌ Invalid password');
+            }
+        } catch (err) {
+            console.error('Error comparing passwords:', err);
         }
-        else {
-            // TODO: Display message for invalid credentials
-        }
+    } else {
+        // Inform the user that the account doesn't exist
+        console.log('\n❌ Sorry, but this user does not exist.\n');
     }
-    else {
-        // Tell the user they can't login to a non-existent account
-        console.log('\n❌ Sorry, but this user does not exist.\n')
-    }
-}
+};
+
 
 hashPassword = async (username, password) => {
-    // TODO: Make sure to delete this console.log once you're done implementing the function!
-    console.log('\nUh-oh, hashPassword is not yet implemented. 😢')
+    try {
+        const hash = await bcrypt.hash(password, saltRounds)
 
-    // TODO: Make the password hash using bcrypt
+        globalStore[username] = hash;
 
-    // TODO: Add the user and password hash to the global store object
-
-    // TODO: Print a status update including the username and password hash
+        console.log(`\n✅ User ${username} added with hash: ${hash}`)
+    } catch (err) {
+        console.log('Error hasing password:', err)
+    }
 }
 
 
